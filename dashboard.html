@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Productos</title>
+    <link rel="stylesheet" href="/Css/tabla.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>Proyecto</h1>
+                </div>
+                <div class="user-actions">
+                    <button id="logoutBtn" class="btn-icon" title="Cerrar Sesión">
+                        <a href="login.html">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </a>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <main class="main-content">
+                <div class="dashboard-header-actions">
+                    <h2>Consumiendo los Endpoints</h2>
+                </div>
+
+                <div class="card card--color">
+                    <div class="card-header">
+                        <h3>Lista de Productos</h3>
+                        <p>Estos son los productos disponibles en la tienda.</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Descripción</th>
+                                        <th>Precio</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productsTableBody">
+                                    <!-- Los datos de productos se cargarán aquí dinámicamente -->
+                                </tbody>
+                            </table>
+                            <div class="actions">
+                                <button id="addProductBtn" class="btn btn-primary">Agregar Producto</button>
+                            </div>
+                        </div>
+                        <!-- Modal para Crear Orden -->
+                        <div id="orderModal" class="modal">
+                            <div class="modal-content">
+                                <span class="close">&times;</span>
+                                <h2>Crear Nueva Orden</h2>
+                                <form id="orderForm">
+                                    <label for="productName">Producto:</label>
+                                    <input type="text" id="productName" required>
+                        
+                                    <label for="quantity">Cantidad:</label>
+                                    <input type="number" id="quantity" required>
+                        
+                                    <label for="totalPrice">Total:</label>
+                                    <input type="number" id="totalPrice" step="0.01" required>
+                        
+                                    <button type="submit" class="btn btn-success">Guardar Orden</button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="card card--color">
+                    <div class="card-header">
+                        <h3>Órdenes Registradas</h3>
+                        <p>Estas son las órdenes registradas en la tienda.</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ordersTableBody">
+                                    <!-- Las órdenes se cargarán aquí dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="dashboard-header-actions">
+                    </div>
+                </div>
+                <div class="card card--color">
+                    <div class="card-header">
+                        <h3>Crear Orden</h3>
+                        <p>Estas son las órdenes registradas en la tienda.</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ordersTableBody">
+                                    <!-- Las órdenes se cargarán aquí dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <button id="createOrderBtn" class="btn btn-primary">Crear Orden</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="/Js/dashboard.js"></script>
+    <script> document.getElementById('addProductBtn').addEventListener('click', function () {
+        window.location.href = 'add-product.html';
+    });</script>
+</body>
+</html>
