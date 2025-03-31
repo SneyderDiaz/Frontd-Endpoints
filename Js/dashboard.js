@@ -35,21 +35,8 @@ document.addEventListener('DOMContentLoaded', async function () {
                     <td>${product.name}</td>
                     <td>${product.description}</td>
                     <td class="price">$${price.toFixed(2)}</td>
-                    <td>
-                        <button class="btn btn-warning edit-btn" data-id="${product.id}">Editar</button>
-                        <button class="btn btn-danger delete-btn" data-id="${product.id}">Eliminar</button>
-                    </td>
                 `;
                 tableBody.appendChild(row);
-            });
-
-            // Añadir eventos para editar y eliminar productos
-            document.querySelectorAll('.edit-btn').forEach(button => {
-                button.addEventListener('click', editProduct);
-            });
-
-            document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', deleteProduct);
             });
         } catch (error) {
             console.error('Error en la petición de productos:', error);
@@ -83,21 +70,8 @@ document.addEventListener('DOMContentLoaded', async function () {
                     <td>${order.product}</td>
                     <td>${order.quantity}</td>
                     <td class="price">$${totalPrice.toFixed(2)}</td>
-                    <td>
-                        <button class="btn btn-warning edit-btn" data-id="${order.id}">Editar</button>
-                        <button class="btn btn-danger delete-btn" data-id="${order.id}">Eliminar</button>
-                    </td>
                 `;
                 ordersTableBody.appendChild(row);
-            });
-
-            // Añadir eventos para editar y eliminar órdenes
-            document.querySelectorAll('.edit-btn').forEach(button => {
-                button.addEventListener('click', editOrder);
-            });
-
-            document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', deleteOrder);
             });
         } catch (error) {
             console.error('Error en la petición de órdenes:', error);
