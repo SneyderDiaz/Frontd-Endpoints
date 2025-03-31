@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Css/styles.css">
+    <title>Registro de Usuario</title>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>Regístrate</h2>
+                <p>Crea tu usuario</p>
+            </div>
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="nombre" placeholder="Usuario" required>
+                </div>
+                <div class="form-group">
+                    <div class="password-header">
+                        <label for="password">Contraseña</label>
+                    </div>
+                    <input type="password" id="password" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-block">Crear Usuario</button>
+                    <p class="auth-redirect">
+                        ¡Si ya tienes una cuenta! <a href="login.html">Iniciar Sesión</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById("registerForm").addEventListener("submit", function (e) {
+            const username = document.getElementById("nombre").value;
+            const password = document.getElementById("password").value;
+
+            // Validación para el nombre de usuario
+            const usernameRegex = /^[a-zA-Z0-9]{5,15}$/; 
+            if (!usernameRegex.test(username)) {
+                alert("El usuario debe tener entre 5 y 15 caracteres y solo puede contener letras y números.");
+                e.preventDefault(); // Evita el envío del formulario si la validación falla
+                return;
+            }
+
+            // Validación para una contraseña segura
+            const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            if (!strongPasswordRegex.test(password)) {
+                alert("La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula, un número y un carácter especial.");
+                e.preventDefault(); 
+                return;
+            }
+        });
+    </script>
+
+    <script src="/Js/register.js"></script>
+</body>
+</html>
