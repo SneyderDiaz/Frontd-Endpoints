@@ -1,211 +1,187 @@
 document.addEventListener('DOMContentLoaded', async function () {
-    const tableBody = document.getElementById('productsTableBody');
-    const ordersTableBody = document.getElementById('ordersTableBody');
     const token = localStorage.getItem('token');
-
     if (!token) {
         alert('No tienes autorización. Inicia sesión primero.');
         window.location.href = 'login.html';
         return;
     }
 
-    async function loadProducts() {
+    const API_URL = 'http://127.0.0.1:8000/api';
+    const tableBody = document.getElementById('productsTableBody');
+    const ordersTableBody = document.getElementById('ordersTableBody');
+    const addProductBtn = document.getElementById('addProductBtn');
+    const createOrderBtn = document.getElementById('createOrderBtn');
+
+    async function fetchData(endpoint) {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/products/', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Token ${token}`,
-                    'Content-Type': 'application/json'
-                }
+            const response = await fetch(`${API_URL}/${endpoint}/`, {
+                headers: { 'Authorization': `Token ${token}` }
             });
-
-            if (!response.ok) {
-                alert(`Error al obtener los productos: ${response.status}`);
-                return;
-            }
-
-            const products = await response.json();
-
-            tableBody.innerHTML = '';
-            products.forEach(product => {
-                const price = parseFloat(product.price) || 0;
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${product.name}</td>
-                    <td>${product.description}</td>
-                    <td class="price">$${price.toFixed(2)}</td>
-                `;
-                tableBody.appendChild(row);
-            });
+            return response.ok ? await response.json() : [];
         } catch (error) {
-            console.error('Error en la petición de productos:', error);
-            alert('Hubo un problema con la conexión al servidor');
+            console.error(`Error al obtener ${endpoint}:`, error);
+            return [];
         }
     }
 
-    async function loadOrders() {
+    async function updateTable(endpoint, tableBody, formatRow) {
+        const data = await fetchData(endpoint);
+        tableBody.innerHTML = '';
+        data.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = formatRow(item);
+            tableBody.appendChild(row);
+        });
+
+        // Agregar eventos a los botones dinámicamente
+        document.querySelectorAll('.btn-edit').forEach(button => {
+            button.addEventListener('click', function () {
+                const id = this.getAttribute('data-id');
+                if (endpoint === 'products') {
+                    editProduct(id);
+                } else {
+                    editOrder(id);
+                }
+            });
+        });
+
+        document.querySelectorAll('.btn-delete').forEach(button => {
+            button.addEventListener('click', function () {
+                const id = this.getAttribute('data-id');
+                if (endpoint === 'products') {
+                    deleteProduct(id);
+                } else {
+                    deleteOrder(id);
+                }
+            });
+        });
+    }
+
+    function productRow(product) {
+        return `
+            <td>${product.name}</td>
+            <td>${product.description}</td>
+            <td>$${parseFloat(product.price).toFixed(2)}</td>
+            <td>
+                <button class="btn btn-edit" data-id="${product.id}">Editar</button>
+                <button class="btn btn-delete" data-id="${product.id}">Eliminar</button>
+            </td>`;
+    }
+
+    function orderRow(order) {
+        return `
+            <td>${order.product}</td>
+            <td>${order.quantity}</td>
+            <td>$${parseFloat(order.total_price).toFixed(2)}</td>
+            <td>
+                <button class="btn btn-edit" data-id="${order.id}">Editar</button>
+                <button class="btn btn-delete" data-id="${order.id}">Eliminar</button>
+            </td>`;
+    }
+
+    async function createItem(endpoint, data) {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/orders/', {
-                method: 'GET',
+            const response = await fetch(`${API_URL}/${endpoint}/`, {
+                method: 'POST',
                 headers: {
                     'Authorization': `Token ${token}`,
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify(data)
             });
-
-            if (!response.ok) {
-                alert(`Error al obtener las órdenes: ${response.status}`);
-                return;
-            }
-
-            const orders = await response.json();
-
-            ordersTableBody.innerHTML = '';
-            orders.forEach(order => {
-                const totalPrice = parseFloat(order.total_price) || 0;
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${order.product}</td>
-                    <td>${order.quantity}</td>
-                    <td class="price">$${totalPrice.toFixed(2)}</td>
-                `;
-                ordersTableBody.appendChild(row);
-            });
+            return response.ok;
         } catch (error) {
-            console.error('Error en la petición de órdenes:', error);
-            alert('Hubo un problema con la conexión al servidor');
+            console.error(`Error al crear ${endpoint}:`, error);
+            return false;
         }
     }
 
-    async function editProduct(event) {
-        const id = event.target.dataset.id;
-        const newName = prompt('Nuevo nombre del producto:');
-        const newDescription = prompt('Nueva descripción:');
-        const newPrice = parseFloat(prompt('Nuevo precio:'));
-
-        if (!newName || !newDescription || isNaN(newPrice)) {
-            alert('Por favor, completa todos los campos correctamente.');
-            return;
-        }
-
+    async function updateItem(endpoint, id, data) {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/products/${id}/`, {
+            const response = await fetch(`${API_URL}/${endpoint}/${id}/`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Token ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ name: newName, description: newDescription, price: newPrice })
+                body: JSON.stringify(data)
             });
-
-            if (!response.ok) {
-                alert(`Error al editar el producto: ${response.status}`);
-                return;
-            }
-
-            alert('Producto editado con éxito.');
-            loadProducts(); // Recargar la lista de productos
+            return response.ok;
         } catch (error) {
-            console.error('Error al editar el producto:', error);
-            alert('Hubo un problema al intentar editar el producto.');
+            console.error(`Error al actualizar ${endpoint}:`, error);
+            return false;
         }
     }
 
-    async function deleteProduct(event) {
-        const id = event.target.dataset.id;
-
-        if (!confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-            return;
-        }
-
+    async function deleteItem(endpoint, id) {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/products/${id}/`, {
+            const response = await fetch(`${API_URL}/${endpoint}/${id}/`, {
                 method: 'DELETE',
-                headers: {
-                    'Authorization': `Token ${token}`,
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'Authorization': `Token ${token}` }
             });
-
-            if (!response.ok) {
-                alert(`Error al eliminar el producto: ${response.status}`);
-                return;
-            }
-
-            alert('Producto eliminado con éxito.');
-            loadProducts(); // Recargar la lista de productos
+            return response.ok;
         } catch (error) {
-            console.error('Error al eliminar el producto:', error);
-            alert('Hubo un problema al intentar eliminar el producto.');
+            console.error(`Error al eliminar ${endpoint}:`, error);
+            return false;
         }
     }
 
-    async function editOrder(event) {
-        const id = event.target.dataset.id;
-        const newProduct = prompt('Nuevo producto:');
-        const newQuantity = parseInt(prompt('Nueva cantidad:'), 10);
-        const newTotalPrice = parseFloat(prompt('Nuevo total:'));
-
-        if (!newProduct || isNaN(newQuantity) || isNaN(newTotalPrice)) {
-            alert('Por favor, completa todos los campos correctamente.');
-            return;
-        }
-
-        try {
-            const response = await fetch(`http://127.0.0.1:8000/api/orders/${id}/`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Token ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ product: newProduct, quantity: newQuantity, total_price: newTotalPrice })
-            });
-
-            if (!response.ok) {
-                alert(`Error al editar la orden: ${response.status}`);
-                return;
+    window.editProduct = async function(id) {
+        const name = prompt('Nuevo nombre:');
+        const description = prompt('Nueva descripción:');
+        const price = parseFloat(prompt('Nuevo precio:'));
+        if (name && description && !isNaN(price)) {
+            if (await updateItem('products', id, { name, description, price })) {
+                updateTable('products', tableBody, productRow);
             }
-
-            alert('Orden editada con éxito.');
-            loadOrders(); // Recargar la lista de órdenes
-        } catch (error) {
-            console.error('Error al editar la orden:', error);
-            alert('Hubo un problema al intentar editar la orden.');
         }
-    }
+    };
 
-    async function deleteOrder(event) {
-        const id = event.target.dataset.id;
-
-        if (!confirm('¿Estás seguro de que deseas eliminar esta orden?')) {
-            return;
+    window.deleteProduct = async function(id) {
+        if (confirm('¿Eliminar producto?') && await deleteItem('products', id)) {
+            updateTable('products', tableBody, productRow);
         }
+    };
 
-        try {
-            const response = await fetch(`http://127.0.0.1:8000/api/orders/${id}/`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Token ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                alert(`Error al eliminar la orden: ${response.status}`);
-                return;
+    window.editOrder = async function(id) {
+        const product = prompt('Nuevo producto:');
+        const quantity = parseInt(prompt('Nueva cantidad:'), 10);
+        const total_price = parseFloat(prompt('Nuevo total:'));
+        if (product && !isNaN(quantity) && !isNaN(total_price)) {
+            if (await updateItem('orders', id, { product, quantity, total_price })) {
+                updateTable('orders', ordersTableBody, orderRow);
             }
-
-            alert('Orden eliminada con éxito.');
-            loadOrders(); // Recargar la lista de órdenes
-        } catch (error) {
-            console.error('Error al eliminar la orden:', error);
-            alert('Hubo un problema al intentar eliminar la orden.');
         }
-    }
+    };
 
-    // Cargar productos y órdenes al inicio
-    await loadProducts();
-    await loadOrders();
+    window.deleteOrder = async function(id) {
+        if (confirm('¿Eliminar orden?') && await deleteItem('orders', id)) {
+            updateTable('orders', ordersTableBody, orderRow);
+        }
+    };
+
+    addProductBtn.addEventListener('click', async () => {
+        const name = prompt('Nombre del producto:');
+        const description = prompt('Descripción:');
+        const price = parseFloat(prompt('Precio:'));
+        if (name && description && !isNaN(price)) {
+            if (await createItem('products', { name, description, price })) {
+                updateTable('products', tableBody, productRow);
+            }
+        }
+    });
+
+    createOrderBtn.addEventListener('click', async () => {
+        const product = prompt('Producto:');
+        const quantity = parseInt(prompt('Cantidad:'), 10);
+        const total_price = parseFloat(prompt('Total:'));
+        if (product && !isNaN(quantity) && !isNaN(total_price)) {
+            if (await createItem('orders', { product, quantity, total_price })) {
+                updateTable('orders', ordersTableBody, orderRow);
+            }
+        }
+    });
+
+    await updateTable('products', tableBody, productRow);
+    await updateTable('orders', ordersTableBody, orderRow);
 });

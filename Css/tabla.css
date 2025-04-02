@@ -661,6 +661,7 @@ select:focus {
     font-weight: 600;
 }
 
+
 /* Media queries para responsividad */
 @media (min-width: 768px) {
     .sidebar {
